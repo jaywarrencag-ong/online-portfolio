@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 
 import { styles } from '../styles';
 import { EarthCanvas } from './canvas';
+import heroImage from '../assets/hero.png';
+
 
 const phrases = [
   "applications.",
@@ -11,34 +13,35 @@ const phrases = [
 ];
 
 const Hero = () => {
-  const [text, setText] = useState("");
-  const [phraseIndex, setPhraseIndex] = useState(0);
-  const [charIndex, setCharIndex] = useState(0);
+  const [text, setText] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [phraseIndex, setPhraseIndex] = useState(0);
 
   useEffect(() => {
     const currentPhrase = phrases[phraseIndex];
-    let typeSpeed = isDeleting ? 50 : 100;
+    const fullText = currentPhrase;
+    const delta = isDeleting ? 50 : 100;
 
-    const timeout = setTimeout(() => {
-      if (isDeleting) {
-        setText(currentPhrase.substring(0, charIndex - 1));
-        setCharIndex(charIndex - 1);
-      } else {
-        setText(currentPhrase.substring(0, charIndex + 1));
-        setCharIndex(charIndex + 1);
-      }
+    const handleTyping = () => {
+      setText(prevText => {
+        const updatedText = isDeleting
+          ? fullText.substring(0, prevText.length - 1)
+          : fullText.substring(0, prevText.length + 1);
 
-      if (!isDeleting && charIndex === currentPhrase.length) {
-        setTimeout(() => setIsDeleting(true), 1000); // pause at full word
-      } else if (isDeleting && charIndex === 0) {
+        return updatedText;
+      });
+
+      if (!isDeleting && text === fullText) {
+        setTimeout(() => setIsDeleting(true), 1000); // pause before deleting
+      } else if (isDeleting && text === '') {
         setIsDeleting(false);
         setPhraseIndex((prev) => (prev + 1) % phrases.length);
       }
-    }, typeSpeed);
+    };
 
+    const timeout = setTimeout(handleTyping, delta);
     return () => clearTimeout(timeout);
-  }, [charIndex, isDeleting, phraseIndex]);
+  }, [text, isDeleting, phraseIndex]);
 
   return (
     <section className="relative w-full h-screen mx-auto">
@@ -62,7 +65,7 @@ const Hero = () => {
       <div className="relative w-full h-full flex justify-end items-end pr-4 sm:pr-12">
         <div className="relative w-[250px] sm:w-[350px] md:w-[650px] lg:w-[550px] h-auto">
           <img
-            src="/src/assets/hero.png"
+            src={heroImage}
             alt="Hero Side"
             className="w-full h-auto object-contain pointer-events-none select-none"
             draggable="false"
